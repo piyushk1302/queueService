@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import authService from "../services/auth.service.js";
+import authService from "../services/auth.services.js";
 import {
   registerSchema,
   loginSchema,
@@ -20,7 +20,7 @@ class AuthController {
       return res.status(400).json({
         success: false,
         message:
-          error instanceof Error ? error.message : "Something went wrong",
+          error instanceof Error ? error.message : "Internal Server Error",
       });
     }
   }
@@ -39,7 +39,7 @@ class AuthController {
       return res.status(400).json({
         success: false,
         message:
-          error instanceof Error ? error.message : "Something went wrong",
+          error instanceof Error ? error.message : "Internal Server Error",
       });
     }
   }
