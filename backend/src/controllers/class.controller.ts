@@ -30,6 +30,61 @@ class ClassController {
       });
     }
   }
+
+  async getAll(req: Request, res: Response) {
+  try {
+    const studioId = req.studioId;
+
+    if (!studioId) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
+    }
+
+    const classes = await classService.getAll(studioId);
+
+    return res.status(200).json({
+      success: true,
+      data: classes,
+    });
+  } catch (error) {
+    return res.status(400).json({
+      success: false,
+      message:
+        error instanceof Error ? error.message : "Internal Server Error",
+    });
+  }
+}
+
+async getById(req: Request, res: Response) {
+  try {
+    const studioId = req.studioId;
+
+    if (!studioId) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
+    }
+
+    const cls = await classService.getById(
+      req.params.id,
+      studioId
+    );
+
+    return res.status(200).json({
+      success: true,
+      data: cls,
+    });
+  } catch (error) {
+    return res.status(400).json({
+      success: false,
+      message:
+        error instanceof Error ? error.message : "Internal Server Error",
+    });
+  }
+}
 }
 
 export default new ClassController();

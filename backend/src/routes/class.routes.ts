@@ -8,4 +8,12 @@ router.post("/", authMiddleware, (req, res) =>
   classController.create(req, res)
 );
 
+router.get("/", authMiddleware, (req, res) =>
+  classController.getAll(req, res)
+);
+
+router.get("/:id", authMiddleware, (req, res) =>
+  classController.getById(req, res)
+);
+
 export default router;

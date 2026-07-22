@@ -19,6 +19,25 @@ class ClassRepository {
       },
     });
   }
+
+  async findAllByStudioId(studioId: string) {
+  return prisma.class.findMany({
+    where: {
+      studioId,
+    },
+    orderBy: {
+      date: "asc",
+    },
+  });
+}
+
+async findById(id: string) {
+  return prisma.class.findUnique({
+    where: {
+      id,
+    },
+  });
+}
 }
 
 export default new ClassRepository();
