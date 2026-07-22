@@ -1,4 +1,5 @@
 import prisma from "../config/prisma.js";
+import type { Prisma } from "@prisma/client";
 
 class WaitlistRepository {
   async findByCustomerAndClass(
@@ -38,13 +39,18 @@ class WaitlistRepository {
     });
   }
 
-  async delete(id: string) {
-    return prisma.waitlist.delete({
-      where: {
-        id,
-      },
-    });
-  }
+  async delete(
+  id: string,
+  tx?: Prisma.TransactionClient
+) {
+  const db = tx ?? prisma;
+
+  return db.waitlist.delete({
+    where: {
+      id,
+    },
+  });
+}
 
   async findById(id: string) {
     return prisma.waitlist.findUnique({
@@ -54,16 +60,21 @@ class WaitlistRepository {
     });
   }
 
-  async findNextInQueue(classId: string) {
-    return prisma.waitlist.findFirst({
-      where: {
-        classId,
-      },
-      orderBy: {
-        joinedAt: "asc",
-      },
-    });
-  }
+  async findNextInQueue(
+  classId: string,
+  tx?: Prisma.TransactionClient
+) {
+  const db = tx ?? prisma;
+
+  return db.waitlist.findFirst({
+    where: {
+      classId,
+    },
+    orderBy: {
+      joinedAt: "asc",
+    },
+  });
+}
 }
 
 export default new WaitlistRepository();

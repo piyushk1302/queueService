@@ -1,4 +1,5 @@
 import prisma from "../config/prisma.js";
+import type { Prisma } from "@prisma/client";
 
 class BookingRepository {
   async findByCustomerAndClass(
@@ -24,14 +25,20 @@ class BookingRepository {
     });
   }
 
-  async create(customerId: string, classId: string) {
-    return prisma.booking.create({
-      data: {
-        customerId,
-        classId,
-      },
-    });
-  }
+  async create(
+  customerId: string,
+  classId: string,
+  tx?: Prisma.TransactionClient
+) {
+  const db = tx ?? prisma;
+
+  return db.booking.create({
+    data: {
+      customerId,
+      classId,
+    },
+  });
+}
 
   async findById(id: string) {
     return prisma.booking.findUnique({
@@ -55,17 +62,22 @@ class BookingRepository {
     });
   }
 
-  async cancel(id: string) {
-    return prisma.booking.update({
-      where: {
-        id,
-      },
-      data: {
-        status: "CANCELLED",
-        cancelledAt: new Date(),
-      },
-    });
-  }
+  async cancel(
+  id: string,
+  tx?: Prisma.TransactionClient
+) {
+  const db = tx ?? prisma;
+
+  return db.booking.update({
+    where: {
+      id,
+    },
+    data: {
+      status: "CANCELLED",
+      cancelledAt: new Date(),
+    },
+  });
+}
 }
 
 export default new BookingRepository();

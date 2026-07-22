@@ -1,5 +1,6 @@
 import bookingRepository from "../repositories/booking.repository.js";
 import reservationRepository from "../repositories/reservation.repository.js";
+import prisma from "../config/prisma.js";
 
 class ReservationService {
   async accept(reservationId: string, customerId: string) {
@@ -23,15 +24,22 @@ class ReservationService {
     }
 
     // 4. Create booking
-    const booking = await bookingRepository.create(
-      customerId,
-      reservation.classId
-    );
+    return prisma.$transaction(async (tx) => {
+  // Create booking
+  const booking = await bookingRepository.create(
+    customerId,
+    reservation.classId,
+    tx
+  );
 
-    // 5. Delete reservation
-    await reservationRepository.delete(reservation.id);
+  // Delete reservation
+  await reservationRepository.delete(
+    reservation.id,
+    tx
+  );
 
-    return booking;
+  return booking;
+});
   }
 
   async getMyReservations(customerId: string) {

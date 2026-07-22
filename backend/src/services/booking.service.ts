@@ -5,6 +5,8 @@ import waitlistRepository from "../repositories/waitlist.repository.js";
 import { getReservationExpiry } from "../utils/reservation.js";
 import prisma from "../config/prisma.js";
 
+import { scheduleReservationExpiry } from "../jobs/reservation.job.js";
+
 class BookingService {
   async create(customerId: string, classId: string) {
     // 1. Check if class exists
@@ -88,7 +90,12 @@ class BookingService {
   }
 
   // Cancel the booking
-  const cancelledBooking = await bookingRepository.cancel(bookingId);
+  return prisma.$transaction(async (tx) => {
+  // Cancel the booking
+  const cancelledBooking = await bookingRepository.cancel(
+    bookingId,
+    tx
+  );
 
   // Find the next customer in the waitlist
   const nextCustomer = await waitlistRepository.findNextInQueue(
@@ -103,21 +110,26 @@ class BookingService {
     };
   }
 
-  // Create a reservation valid for 10 minutes
+  // Create a reservation
   const reservation = await reservationRepository.create(
     nextCustomer.customerId,
     nextCustomer.classId,
-    getReservationExpiry()
+    getReservationExpiry(),
+    tx
   );
 
-  // Remove customer from waitlist
-  await waitlistRepository.delete(nextCustomer.id);
+  // Remove from waitlist
+  await waitlistRepository.delete(nextCustomer.id, tx);
+
+  await scheduleReservationExpiry(reservation.id, 5000);
+
 
   return {
     status: "RESERVATION_CREATED",
     booking: cancelledBooking,
     reservation,
   };
+});
 }
 }
 

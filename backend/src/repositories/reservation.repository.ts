@@ -1,15 +1,23 @@
 import prisma from "../config/prisma.js";
+import type { Prisma } from "@prisma/client";
 
 class ReservationRepository {
-  async create(customerId: string, classId: string, expiresAt: Date) {
-    return prisma.reservation.create({
-      data: {
-        customerId,
-        classId,
-        expiresAt,
-      },
-    });
-  }
+  async create(
+  customerId: string,
+  classId: string,
+  expiresAt: Date,
+  tx?: Prisma.TransactionClient
+) {
+  const db = tx ?? prisma;
+
+  return db.reservation.create({
+    data: {
+      customerId,
+      classId,
+      expiresAt,
+    },
+  });
+}
 
   async findById(id: string) {
     return prisma.reservation.findUnique({
@@ -33,13 +41,18 @@ class ReservationRepository {
     });
   }
 
-  async delete(id: string) {
-    return prisma.reservation.delete({
-      where: {
-        id,
-      },
-    });
-  }
+  async delete(
+  id: string,
+  tx?: Prisma.TransactionClient
+) {
+  const db = tx ?? prisma;
+
+  return db.reservation.delete({
+    where: {
+      id,
+    },
+  });
+}
 
   async findExpiredReservations(now: Date) {
     return prisma.reservation.findMany({
