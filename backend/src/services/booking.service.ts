@@ -1,5 +1,6 @@
 import bookingRepository from "../repositories/booking.repository.js";
 import classRepository from "../repositories/class.repository.js";
+import waitlistRepository from "../repositories/waitlist.repository.js";
 
 class BookingService {
   async create(customerId: string, classId: string) {
@@ -31,11 +32,37 @@ class BookingService {
       await bookingRepository.countConfirmedBookings(classId);
 
     if (confirmedBookings >= cls.capacity) {
-      throw new Error("Class is full");
+    const existingWaitlist =
+        await waitlistRepository.findByCustomerAndClass(
+            customerId,
+            classId
+        );
+
+    if (existingWaitlist) {
+        throw new Error("You are already on the waitlist");
     }
 
+    const waitlist = await waitlistRepository.create(
+        customerId,
+        classId
+    );
+
+    return {
+        status: "WAITLISTED",
+        waitlist,
+    };
+}
+
     // 5. Create booking
-    return bookingRepository.create(customerId, classId);
+    const booking = await bookingRepository.create(
+        customerId,
+        classId
+    );
+
+    return {
+        status: "CONFIRMED",
+        booking,
+    };
   }
 
   async getMyBookings(customerId: string) {
