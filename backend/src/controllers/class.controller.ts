@@ -1,6 +1,6 @@
 import type { Request, Response } from "express";
 import classService from "../services/class.service.js";
-import { createClassSchema } from "../schemas/class.schema.js";
+import { createClassSchema, updateClassSchema } from "../schemas/class.schema.js";
 
 class ClassController {
   async create(req: Request, res: Response) {
@@ -82,6 +82,40 @@ async getById(req: Request, res: Response) {
       success: false,
       message:
         error instanceof Error ? error.message : "Internal Server Error",
+    });
+  }
+}
+
+async update(req: Request, res: Response) {
+  try {
+    const studioId = req.studioId;
+
+    if (!studioId) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
+    }
+
+    const data = updateClassSchema.parse(req.body);
+
+    const updatedClass = await classService.update(
+      req.params.id,
+      data,
+      studioId
+    );
+
+    return res.status(200).json({
+      success: true,
+      data: updatedClass,
+    });
+  } catch (error) {
+    return res.status(400).json({
+      success: false,
+      message:
+        error instanceof Error
+          ? error.message
+          : "Internal Server Error",
     });
   }
 }

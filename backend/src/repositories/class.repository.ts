@@ -1,5 +1,8 @@
 import prisma from "../config/prisma.js";
-import type { CreateClassInput } from "../schemas/class.schema.js";
+import type {
+  CreateClassInput,
+  UpdateClassInput,
+} from "../schemas/class.schema.js";
 
 class ClassRepository {
   async create(data: CreateClassInput, studioId: string) {
@@ -21,23 +24,32 @@ class ClassRepository {
   }
 
   async findAllByStudioId(studioId: string) {
-  return prisma.class.findMany({
-    where: {
-      studioId,
-    },
-    orderBy: {
-      date: "asc",
-    },
-  });
-}
+    return prisma.class.findMany({
+      where: {
+        studioId,
+      },
+      orderBy: {
+        date: "asc",
+      },
+    });
+  }
 
-async findById(id: string) {
-  return prisma.class.findUnique({
-    where: {
-      id,
-    },
-  });
-}
+  async findById(id: string) {
+    return prisma.class.findUnique({
+      where: {
+        id,
+      },
+    });
+  }
+
+  async update(id: string, data: UpdateClassInput) {
+    return prisma.class.update({
+      where: {
+        id,
+      },
+      data,
+    });
+  }
 }
 
 export default new ClassRepository();

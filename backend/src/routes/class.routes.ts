@@ -16,4 +16,8 @@ router.get("/:id", authMiddleware, (req, res) =>
   classController.getById(req, res)
 );
 
+router.patch("/:id", authMiddleware, (req, res) =>
+  classController.update(req, res)
+);
+
 export default router;
