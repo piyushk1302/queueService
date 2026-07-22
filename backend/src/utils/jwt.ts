@@ -2,7 +2,11 @@ import jwt from "jsonwebtoken";
 
 const JWT_SECRET = process.env.JWT_SECRET!;
 
-export const generateToken = (studioId: string) => {
+export interface JwtPayload {
+  studioId: string;
+}
+
+export const generateToken = (studioId: string): string => {
   return jwt.sign(
     {
       studioId,
@@ -14,6 +18,6 @@ export const generateToken = (studioId: string) => {
   );
 };
 
-export const verifyToken = (token: string) => {
-  return jwt.verify(token, JWT_SECRET);
+export const verifyToken = (token: string): JwtPayload => {
+  return jwt.verify(token, JWT_SECRET) as JwtPayload;
 };

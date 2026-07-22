@@ -1,9 +1,17 @@
 import express from "express";
-import authRoutes from "./routes/auth.routes.js";
+import routes from "./routes/index.js";
+import { authMiddleware } from "./middleware/auth.middleware.js";
+
 
 const app = express();
 
 app.use(express.json());
+
+app.get("/me", authMiddleware, (req, res) => {
+  res.json({
+    studioId: req.studioId,
+  });
+});
 
 app.get("/health", (_, res) => {
   res.json({
@@ -11,6 +19,6 @@ app.get("/health", (_, res) => {
   });
 });
 
-app.use("/api/v1/auth", authRoutes);
+app.use("/api/v1", routes);
 
 export default app;
