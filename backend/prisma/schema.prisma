@@ -11,7 +11,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-
 enum BookingStatus {
   CONFIRMED
   CANCELLED
@@ -28,27 +27,28 @@ enum ReservationStatus {
 enum ClassStatus {
   ACTIVE
   CANCELLED
+  COMPLETED
 }
 
 model Studio {
-  id         String   @id @default(uuid())
-  name       String
-  email      String   @unique
-  password   String
-  phone      String
-  address    String
+  id       String @id @default(uuid())
+  name     String
+  email    String @unique
+  password String
+  phone    String
+  address  String
 
-  classes    Class[]
+  classes Class[]
 
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Customer {
-  id          String @id @default(uuid())
-  name        String
-  email       String @unique
-  phone       String
+  id    String @id @default(uuid())
+  name  String
+  email String @unique
+  phone String
 
   bookings     Booking[]
   waitlists    Waitlist[]
@@ -59,21 +59,21 @@ model Customer {
 }
 
 model Class {
-  id          String @id @default(uuid())
-
-  studioId    String
-  studio      Studio @relation(fields: [studioId], references: [id])
-
+  id          String  @id @default(uuid())
   title       String
   description String?
   instructor  String
-  location    String
-
   capacity    Int
 
-  date        DateTime
+  date      DateTime
+  startTime DateTime
+  endTime   DateTime
 
-  status      ClassStatus @default(ACTIVE)
+  location String
+  status   ClassStatus @default(ACTIVE)
+
+  studioId String
+  studio   Studio @relation(fields: [studioId], references: [id], onDelete: Cascade)
 
   bookings     Booking[]
   waitlists    Waitlist[]
@@ -84,53 +84,50 @@ model Class {
 }
 
 model Booking {
-
   id String @id @default(uuid())
 
   customerId String
-  classId String
+  classId    String
 
-  customer Customer @relation(fields:[customerId], references:[id])
-  class Class @relation(fields:[classId], references:[id])
+  customer Customer @relation(fields: [customerId], references: [id])
+  class    Class    @relation(fields: [classId], references: [id])
 
   status BookingStatus @default(CONFIRMED)
 
-  bookedAt DateTime @default(now())
+  bookedAt    DateTime  @default(now())
   cancelledAt DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@unique([customerId,classId])
+  @@unique([customerId, classId])
 }
 
 model Waitlist {
-
   id String @id @default(uuid())
 
   customerId String
-  classId String
+  classId    String
 
-  customer Customer @relation(fields:[customerId], references:[id])
-  class Class @relation(fields:[classId], references:[id])
+  customer Customer @relation(fields: [customerId], references: [id])
+  class    Class    @relation(fields: [classId], references: [id])
 
   joinedAt DateTime @default(now())
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@unique([customerId,classId])
+  @@unique([customerId, classId])
 }
 
 model Reservation {
-
   id String @id @default(uuid())
 
   customerId String
-  classId String
+  classId    String
 
-  customer Customer @relation(fields:[customerId], references:[id])
-  class Class @relation(fields:[classId], references:[id])
+  customer Customer @relation(fields: [customerId], references: [id])
+  class    Class    @relation(fields: [classId], references: [id])
 
   status ReservationStatus @default(PENDING)
 
@@ -140,35 +137,4 @@ model Reservation {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-}
-
-enum ClassStatus {
-  ACTIVE
-  CANCELLED
-  COMPLETED
-}
-
-model Class {
-  id          String      @id @default(uuid())
-  title       String
-  description String?
-  instructor  String
-  capacity    Int
-
-  date        DateTime
-  startTime   DateTime
-  endTime     DateTime
-
-  location    String
-  status      ClassStatus @default(ACTIVE)
-
-  studioId    String
-  studio      Studio      @relation(fields: [studioId], references: [id], onDelete: Cascade)
-
-  bookings    Booking[]
-  waitlists   Waitlist[]
-  reservations Reservation[]
-
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
 }
