@@ -1,0 +1,3 @@
+// generateToken(studioId)
+
+// verifyToken(token)
