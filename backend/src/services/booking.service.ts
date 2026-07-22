@@ -1,6 +1,9 @@
 import bookingRepository from "../repositories/booking.repository.js";
 import classRepository from "../repositories/class.repository.js";
+import reservationRepository from "../repositories/reservation.repository.js";
 import waitlistRepository from "../repositories/waitlist.repository.js";
+import { getReservationExpiry } from "../utils/reservation.js";
+import prisma from "../config/prisma.js";
 
 class BookingService {
   async create(customerId: string, classId: string) {
@@ -23,9 +26,9 @@ class BookingService {
         classId
       );
 
-    if (existingBooking) {
-      throw new Error("You have already booked this class");
-    }
+    if (existingBooking && existingBooking.status === "CONFIRMED") {
+    throw new Error("You have already booked this class");
+}
 
     // 4. Check capacity
     const confirmedBookings =
@@ -70,22 +73,52 @@ class BookingService {
   }
 
   async cancel(bookingId: string, customerId: string) {
-    const booking = await bookingRepository.findById(bookingId);
+  const booking = await bookingRepository.findById(bookingId);
 
-    if (!booking) {
-      throw new Error("Booking not found");
-    }
-
-    if (booking.customerId !== customerId) {
-      throw new Error("Unauthorized");
-    }
-
-    if (booking.status === "CANCELLED") {
-      throw new Error("Booking already cancelled");
-    }
-
-    return bookingRepository.cancel(bookingId);
+  if (!booking) {
+    throw new Error("Booking not found");
   }
+
+  if (booking.customerId !== customerId) {
+    throw new Error("Unauthorized");
+  }
+
+  if (booking.status === "CANCELLED") {
+    throw new Error("Booking already cancelled");
+  }
+
+  // Cancel the booking
+  const cancelledBooking = await bookingRepository.cancel(bookingId);
+
+  // Find the next customer in the waitlist
+  const nextCustomer = await waitlistRepository.findNextInQueue(
+    booking.classId
+  );
+
+  // No one waiting
+  if (!nextCustomer) {
+    return {
+      status: "CANCELLED",
+      booking: cancelledBooking,
+    };
+  }
+
+  // Create a reservation valid for 10 minutes
+  const reservation = await reservationRepository.create(
+    nextCustomer.customerId,
+    nextCustomer.classId,
+    getReservationExpiry()
+  );
+
+  // Remove customer from waitlist
+  await waitlistRepository.delete(nextCustomer.id);
+
+  return {
+    status: "RESERVATION_CREATED",
+    booking: cancelledBooking,
+    reservation,
+  };
+}
 }
 
 export default new BookingService();
