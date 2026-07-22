@@ -49,6 +49,7 @@ model Customer {
   name  String
   email String @unique
   phone String
+  password String
 
   bookings     Booking[]
   waitlists    Waitlist[]

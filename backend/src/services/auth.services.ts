@@ -18,7 +18,7 @@ class AuthService {
       password: hashedPassword,
     });
 
-    const token = generateToken(studio.id);
+    const token = generateToken(studio.id, "studio");
 
     return {
       studio,
@@ -42,7 +42,7 @@ class AuthService {
       throw new Error("Invalid email or password");
     }
 
-    const token = generateToken(studio.id);
+    const token = generateToken(studio.id, "studio");
 
     return {
       studio: {

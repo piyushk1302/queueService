@@ -23,11 +23,18 @@ export async function authMiddleware(
       });
     }
 
-    const token = authHeader.split(" ")[1];
+    const token = authHeader.split(" ")[1]!;
 
     const payload = verifyToken(token);
 
-    req.studioId = payload.studioId;
+if (payload.role !== "studio") {
+  return res.status(403).json({
+    success: false,
+    message: "Forbidden",
+  });
+}
+
+req.studioId = payload.userId;
 
     next();
   } catch {

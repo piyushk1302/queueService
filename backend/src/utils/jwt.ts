@@ -3,13 +3,18 @@ import jwt from "jsonwebtoken";
 const JWT_SECRET = process.env.JWT_SECRET!;
 
 export interface JwtPayload {
-  studioId: string;
+  userId: string;
+  role: "studio" | "customer";
 }
 
-export const generateToken = (studioId: string): string => {
+export const generateToken = (
+  userId: string,
+  role: "studio" | "customer"
+): string => {
   return jwt.sign(
     {
-      studioId,
+      userId,
+      role,
     },
     JWT_SECRET,
     {

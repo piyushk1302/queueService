@@ -20,4 +20,8 @@ router.patch("/:id", authMiddleware, (req, res) =>
   classController.update(req, res)
 );
 
+router.delete("/:id", authMiddleware, (req, res) =>
+  classController.delete(req, res)
+);
+
 export default router;

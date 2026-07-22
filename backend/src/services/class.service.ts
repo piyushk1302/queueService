@@ -55,6 +55,20 @@ class ClassService {
 
     return classRepository.update(id, data);
   }
+
+  async delete(id: string, studioId: string) {
+  const cls = await classRepository.findById(id);
+
+  if (!cls) {
+    throw new Error("Class not found");
+  }
+
+  if (cls.studioId !== studioId) {
+    throw new Error("Unauthorized");
+  }
+
+  return classRepository.delete(id);
+}
 }
 
 export default new ClassService();

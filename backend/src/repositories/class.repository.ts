@@ -50,6 +50,14 @@ class ClassRepository {
       data,
     });
   }
+
+  async delete(id: string) {
+  return prisma.class.delete({
+    where: {
+      id,
+    },
+  });
+}
 }
 
 export default new ClassRepository();

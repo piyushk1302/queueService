@@ -119,6 +119,34 @@ async update(req: Request, res: Response) {
     });
   }
 }
+
+async delete(req: Request, res: Response) {
+  try {
+    const studioId = req.studioId;
+
+    if (!studioId) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
+    }
+
+    await classService.delete(req.params.id, studioId);
+
+    return res.status(200).json({
+      success: true,
+      message: "Class deleted successfully",
+    });
+  } catch (error) {
+    return res.status(400).json({
+      success: false,
+      message:
+        error instanceof Error
+          ? error.message
+          : "Internal Server Error",
+    });
+  }
+}
 }
 
 export default new ClassController();
