@@ -3,6 +3,7 @@ import reservationRepository from "../repositories/reservation.repository.js";
 import prisma from "../config/prisma.js";
 import { getReservationExpiry } from "../utils/reservation.js";
 import { scheduleReservationExpiry } from "../jobs/reservation.job.js";
+import mailService from "./mail.service.js";
 
 class ReservationExpiryService {
   async process(reservationId: string) {
@@ -65,13 +66,37 @@ class ReservationExpiryService {
 
     // Schedule expiry for the newly created reservation
     await scheduleReservationExpiry(
-      newReservation.id,
-      5000 // Change back to default 10 min after testing
-    );
+  newReservation.id,
+  60000
+);
 
-    console.log(
-      `Next reservation created: ${newReservation.id}`
-    );
+// Load reservation details
+const details =
+  await reservationRepository.findReservationDetails(
+    newReservation.id
+  );
+
+if (!details) {
+  throw new Error("Reservation not found");
+}
+
+// Send email
+await mailService.sendReservationCreated(
+  details.customer.email,
+  {
+    customerName: details.customer.name,
+    classTitle: details.class.title,
+    instructor: details.class.instructor,
+    location: details.class.location,
+    startTime: details.class.startTime,
+    endTime: details.class.endTime,
+    expiresAt: details.expiresAt,
+  }
+);
+
+console.log(
+  `Next reservation created: ${newReservation.id}`
+);
   }
 }
 

@@ -73,6 +73,18 @@ class ReservationRepository {
     });
   }
 
+  async findReservationDetails(reservationId: string) {
+  return prisma.reservation.findUnique({
+    where: {
+      id: reservationId,
+    },
+    include: {
+      customer: true,
+      class: true,
+    },
+  });
+}
+
   
 }
 
